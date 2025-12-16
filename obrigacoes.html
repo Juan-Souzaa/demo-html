@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Obrigações - SEMEAR</title>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">SE</div>
+                    <div class="logo-text">
+                        <h1>SEMEAR</h1>
+                        <p>Sistema de Gestão Operacional</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item"><a href="dashboard.html" class="nav-link"><i class="bi bi-bar-chart"></i> Dashboard</a></div>
+                <div class="nav-item"><a href="planejamento.html" class="nav-link"><i class="bi bi-calendar3"></i> Planejamento</a></div>
+                <div class="nav-item"><a href="obrigacoes.html" class="nav-link"><i class="bi bi-exclamation-triangle"></i> Obrigações</a></div>
+                <div class="nav-item"><a href="reunioes.html" class="nav-link"><i class="bi bi-people"></i> Reuniões</a></div>
+                <div class="nav-item"><a href="relatorios.html" class="nav-link"><i class="bi bi-file-text"></i> Relatórios</a></div>
+                <div class="nav-item" id="nav-permissions-item" style="display: none;"><a href="permissions.html" class="nav-link"><i class="bi bi-shield-lock"></i> Permissões</a></div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="header">
+                <button class="sidebar-toggle d-md-none" type="button" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+                <div class="header-title">
+                    <h1>Obrigações</h1>
+                    <p>Gestão de obrigações e compromissos da associação</p>
+                </div>
+                <div class="header-actions">
+                    <a href="obrigacoes-create.html" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i>Nova Obrigação</a>
+                    <button class="notification-btn" onclick="showNotifications()"><i class="bi bi-bell"></i><span class="notification-label" id="notification-count" style="display: none;">0</span></button>
+                    <div class="dropdown">
+                        <button class="profile-btn dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown"><i class="bi bi-person"></i></button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header" id="user-name">Usuário</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person me-2"></i>Meu Perfil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button type="button" class="dropdown-item text-danger" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Sair</button></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+            <div class="content">
+                <form class="row mb-4">
+                    <div class="col-md-5"><div class="input-group"><span class="input-group-text"><i class="bi bi-search"></i></span><input type="text" class="form-control" placeholder="Buscar obrigações..."></div></div>
+                    <div class="col-md-2"><select class="form-select"><option value="">Todos os status</option><option value="pendente">Pendente</option><option value="em_andamento">Em Andamento</option><option value="concluida">Concluída</option><option value="vencida">Vencida</option></select></div>
+                    <div class="col-md-2"><select class="form-select"><option value="">Todas as prioridades</option><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
+                    <div class="col-md-3"><button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-funnel me-2"></i>Filtrar</button></div>
+                </form>
+                <div class="metric-card">
+                    <h3 class="metric-label mb-3" id="obrigacoes-titulo">Obrigações</h3>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Título</th>
+                                    <th class="d-none d-md-table-cell">Tipo</th>
+                                    <th>Vencimento</th>
+                                    <th class="d-none d-lg-table-cell">Prioridade</th>
+                                    <th class="d-none d-sm-table-cell">Status</th>
+                                    <th class="d-none d-xl-table-cell">Responsável</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="obrigacoes-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="app.js"></script>
+    <script src="auth.js"></script>
+    <script src="utils.js"></script>
+    <script src="common.js"></script>
+    <script>
+        if (typeof DatabaseManager !== 'undefined' && !DatabaseManager.isInitialized()) { DatabaseManager.initialize(); DatabaseManager.seed(); }
+        function excluirObrigacao(id, titulo) {
+            Utils.confirm('Deseja realmente excluir a obrigação "' + titulo + '"?', function() {
+                DatabaseManager.deleteObrigacao(id);
+                Utils.showSuccess('Obrigação excluída com sucesso!');
+                setTimeout(() => window.location.reload(), 500);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!initCommon()) return;
+            const obrigacoes = DatabaseManager.getObrigacoes();
+            const hoje = new Date();
+            document.getElementById('obrigacoes-titulo').textContent = 'Obrigações (' + obrigacoes.length + ')';
+            let html = '';
+            if (obrigacoes.length > 0) {
+                obrigacoes.forEach(obrigacao => {
+                    const diasRestantes = Utils.diffInDays(hoje, obrigacao.data_vencimento);
+                    const isVencida = Utils.isVencida(obrigacao.data_vencimento) && obrigacao.status !== 'concluida';
+                    const responsavel = obrigacao.responsavel_id ? DatabaseManager.getUserById(obrigacao.responsavel_id) : null;
+                    const rowClass = isVencida ? 'table-danger' : (diasRestantes <= 3 && diasRestantes >= 0 ? 'table-warning' : '');
+                    const prioridadeBadge = obrigacao.prioridade === 'urgente' ? 'danger' : obrigacao.prioridade === 'alta' ? 'warning' : 'info';
+                    const statusBadge = obrigacao.status === 'concluida' ? 'success' : obrigacao.status === 'em_andamento' ? 'primary' : 'secondary';
+                    const vencimentoInfo = isVencida ? '<br><small class="text-danger">Vencida há ' + Math.abs(diasRestantes) + ' dia(s)</small>' : diasRestantes >= 0 ? '<br><small class="text-muted">' + diasRestantes + ' dia(s) restante(s)</small>' : '';
+                    const tituloEscapado = obrigacao.titulo.replace(/'/g, "\\'");
+                    html += '<tr class="' + rowClass + '"><td><strong>' + obrigacao.titulo + '</strong><br><small class="text-muted d-none d-md-inline">' + Utils.limitText(obrigacao.descricao || '', 50) + '</small></td><td class="d-none d-md-table-cell"><span class="badge bg-secondary">' + (obrigacao.tipo || 'Não definido') + '</span></td><td>' + Utils.formatDate(obrigacao.data_vencimento) + vencimentoInfo + '</td><td class="d-none d-lg-table-cell"><span class="badge bg-' + prioridadeBadge + '">' + (obrigacao.prioridade || 'Média') + '</span></td><td class="d-none d-sm-table-cell"><span class="badge bg-' + statusBadge + '">' + (obrigacao.status || 'Pendente') + '</span></td><td class="d-none d-xl-table-cell">' + (responsavel ? responsavel.name : 'Não definido') + '</td><td><div class="d-flex gap-1"><a href="obrigacoes-show.html?id=' + obrigacao.id + '" class="btn btn-sm btn-outline-primary" title="Ver detalhes"><i class="bi bi-eye"></i></a><a href="obrigacoes-create.html?id=' + obrigacao.id + '" class="btn btn-sm btn-outline-secondary" title="Editar"><i class="bi bi-pencil"></i></a><button type="button" class="btn btn-sm btn-outline-danger" onclick="excluirObrigacao(\'' + obrigacao.id + '\', \'' + tituloEscapado + '\')" title="Excluir"><i class="bi bi-trash"></i></button></div></td></tr>';
+                });
+            } else {
+                html = '<tr><td colspan="7" class="text-center py-5"><p class="text-muted">Nenhuma obrigação encontrada.</p></td></tr>';
+            }
+            document.getElementById('obrigacoes-tbody').innerHTML = html;
+        });
+    </script>
+</body>
+</html>
+

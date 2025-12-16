@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - SEMEAR</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">SE</div>
+                    <div class="logo-text">
+                        <h1>SEMEAR</h1>
+                        <p>Sistema de Gestão Operacional</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="bi bi-bar-chart"></i>
+                        Dashboard
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="planejamento.html" class="nav-link">
+                        <i class="bi bi-calendar3"></i>
+                        Planejamento
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="obrigacoes.html" class="nav-link">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Obrigações
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="reunioes.html" class="nav-link">
+                        <i class="bi bi-people"></i>
+                        Reuniões
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="relatorios.html" class="nav-link">
+                        <i class="bi bi-file-text"></i>
+                        Relatórios
+                    </a>
+                </div>
+                <div class="nav-item" id="nav-permissions-item" style="display: none;">
+                    <a href="permissions.html" class="nav-link">
+                        <i class="bi bi-shield-lock"></i>
+                        Permissões
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <button class="sidebar-toggle d-md-none" type="button" onclick="toggleSidebar()" title="Abrir menu">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="header-title">
+                    <h1>Entrar</h1>
+                    <p>Acesse sua conta para continuar</p>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="row justify-content-center">
+                    <div class="col-md-6 col-lg-5">
+                        <div class="metric-card">
+                            <div class="text-center mb-4">
+                                <div class="logo-icon mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                    SE
+                                </div>
+                                <h2 class="metric-label">Entrar</h2>
+                                <p class="metric-description">Acesse sua conta para continuar</p>
+                            </div>
+
+                            <form id="loginForm" class="needs-validation" novalidate>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">E-mail</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-envelope"></i>
+                                        </span>
+                                        <input type="email" 
+                                               class="form-control" 
+                                               id="email" 
+                                               name="email" 
+                                               placeholder="seu@email.com"
+                                               required 
+                                               autofocus>
+                                        <div class="invalid-feedback">Por favor, informe um e-mail válido.</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Senha</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-lock"></i>
+                                        </span>
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="password" 
+                                               name="password" 
+                                               placeholder="Sua senha"
+                                               required>
+                                        <div class="invalid-feedback">Por favor, informe sua senha.</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" 
+                                           class="form-check-input" 
+                                           id="remember" 
+                                           name="remember">
+                                    <label class="form-check-label" for="remember">
+                                        Lembrar de mim
+                                    </label>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+                                    </button>
+                                </div>
+                            </form>
+
+                            <hr class="my-4">
+
+                            <div class="text-center">
+                                <p class="mb-0">
+                                    Não tem uma conta? 
+                                    <a href="register.html" class="text-decoration-none fw-semibold">
+                                        Registre-se aqui
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <p class="metric-description">
+                                <i class="bi bi-shield-check me-1"></i>
+                                Suas informações estão seguras e protegidas
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- App Scripts -->
+    <script src="app.js"></script>
+    <script src="auth.js"></script>
+    <script src="utils.js"></script>
+    <script src="common.js"></script>
+    
+    <script>
+        // Inicializar banco de dados
+        if (typeof DatabaseManager !== 'undefined' && !DatabaseManager.isInitialized()) {
+            DatabaseManager.initialize();
+            DatabaseManager.seed();
+        }
+        
+        // Verificar se já está logado
+        if (typeof Auth !== 'undefined' && Auth.isAuthenticated()) {
+            window.location.href = 'dashboard.html';
+        }
+        
+        // Formulário de login
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('loginForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!form.checkValidity()) {
+                        form.classList.add('was-validated');
+                        return;
+                    }
+                    
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    
+                    const result = Auth.login(email, password);
+                    
+                    if (result.success) {
+                        Utils.showSuccess('Login realizado com sucesso!');
+                        setTimeout(function() {
+                            window.location.href = 'dashboard.html';
+                        }, 500);
+                    } else {
+                        Utils.showError(result.message);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Detalhes da Reunião - SEMEAR</title>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">SE</div>
+                    <div class="logo-text">
+                        <h1>SEMEAR</h1>
+                        <p>Sistema de Gestão Operacional</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item"><a href="dashboard.html" class="nav-link"><i class="bi bi-bar-chart"></i> Dashboard</a></div>
+                <div class="nav-item"><a href="planejamento.html" class="nav-link"><i class="bi bi-calendar3"></i> Planejamento</a></div>
+                <div class="nav-item"><a href="obrigacoes.html" class="nav-link"><i class="bi bi-exclamation-triangle"></i> Obrigações</a></div>
+                <div class="nav-item"><a href="reunioes.html" class="nav-link"><i class="bi bi-people"></i> Reuniões</a></div>
+                <div class="nav-item"><a href="relatorios.html" class="nav-link"><i class="bi bi-file-text"></i> Relatórios</a></div>
+                <div class="nav-item" id="nav-permissions-item" style="display: none;"><a href="permissions.html" class="nav-link"><i class="bi bi-shield-lock"></i> Permissões</a></div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="header">
+                <button class="sidebar-toggle d-md-none" type="button" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+                <div class="header-title">
+                    <h1>Detalhes da Reunião</h1>
+                    <p>Visualizar detalhes da reunião</p>
+                </div>
+                <div class="header-actions">
+                    <button class="notification-btn" onclick="showNotifications()"><i class="bi bi-bell"></i><span class="notification-label" id="notification-count" style="display: none;">0</span></button>
+                    <div class="dropdown">
+                        <button class="profile-btn dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown"><i class="bi bi-person"></i></button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header" id="user-name">Usuário</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person me-2"></i>Meu Perfil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button type="button" class="dropdown-item text-danger" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Sair</button></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+            <div class="content">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="metric-card mb-4" id="reuniao-detalhes">
+                            <p class="text-muted">Carregando...</p>
+                        </div>
+                        <div class="metric-card mb-4" id="participantes-section">
+                            <h4 class="metric-label mb-3">Participantes</h4>
+                            <ul class="list-group" id="participantes-list"></ul>
+                        </div>
+                        <div class="metric-card mb-4" id="atas-section">
+                            <h4 class="metric-label mb-3">Atas</h4>
+                            <div id="atas-list"></div>
+                        </div>
+                        <div class="metric-card" id="decisoes-section">
+                            <h4 class="metric-label mb-3">Decisões</h4>
+                            <div id="decisoes-list"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="metric-card">
+                            <h4 class="metric-label mb-3">Ações</h4>
+                            <div class="d-grid gap-2">
+                                <a href="reunioes.html" class="btn btn-secondary"><i class="bi bi-arrow-left me-2"></i>Voltar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="app.js"></script>
+    <script src="auth.js"></script>
+    <script src="utils.js"></script>
+    <script src="common.js"></script>
+    <script>
+        if (typeof DatabaseManager !== 'undefined' && !DatabaseManager.isInitialized()) { DatabaseManager.initialize(); DatabaseManager.seed(); }
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!initCommon()) return;
+            const id = getUrlId();
+            if (!id) { document.getElementById('reuniao-detalhes').innerHTML = '<p class="text-danger">ID não fornecido.</p>'; return; }
+            const reuniao = DatabaseManager.getReuniaoById(id);
+            if (!reuniao) { document.getElementById('reuniao-detalhes').innerHTML = '<p class="text-danger">Reunião não encontrada.</p>'; return; }
+            const organizador = reuniao.organizador_id ? DatabaseManager.getUserById(reuniao.organizador_id) : null;
+            const participantes = DatabaseManager.getParticipantesReuniao(id);
+            const atas = DatabaseManager.getAtasByReuniao(id);
+            const decisoes = DatabaseManager.getDecisoesByReuniao(id);
+            const statusBadge = reuniao.status === 'concluida' ? 'success' : reuniao.status === 'confirmada' ? 'success' : 'secondary';
+            
+            let html = '<div class="d-flex justify-content-between align-items-start mb-4"><div><h3 class="metric-label mb-2">' + reuniao.titulo + '</h3><p class="metric-description">' + (reuniao.descricao || 'Sem descrição') + '</p></div><div class="d-flex gap-2"><a href="reunioes-create.html?id=' + reuniao.id + '" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>Editar</a></div></div>';
+            html += '<div class="row mb-3"><div class="col-md-6"><strong>Tipo:</strong> ' + (reuniao.tipo || 'Não definido') + '<br><strong>Status:</strong> <span class="badge bg-' + statusBadge + '">' + (reuniao.status || 'Agendada') + '</span></div><div class="col-md-6"><strong>Data e Hora:</strong> ' + Utils.formatDateTime(reuniao.data_hora) + '<br><strong>Local:</strong> ' + (reuniao.local || 'Não definido') + '</div></div>';
+            html += '<div class="mb-3"><strong>Organizador:</strong> ' + (organizador ? organizador.name : 'Não definido') + '</div>';
+            document.getElementById('reuniao-detalhes').innerHTML = html;
+            
+            let participantesHTML = '';
+            if (participantes.length > 0) {
+                participantes.forEach(participante => {
+                    const user = DatabaseManager.getUserById(participante.user_id);
+                    if (user) {
+                        participantesHTML += '<li class="list-group-item d-flex justify-content-between align-items-center">' + user.name + '<span class="badge bg-' + (participante.confirmado ? 'success' : 'secondary') + '">' + (participante.confirmado ? 'Confirmado' : 'Pendente') + '</span></li>';
+                    }
+                });
+            } else {
+                participantesHTML = '<li class="list-group-item text-muted">Nenhum participante adicionado</li>';
+            }
+            document.getElementById('participantes-list').innerHTML = participantesHTML;
+            
+            let atasHTML = '';
+            if (atas.length > 0) {
+                atas.forEach(ata => {
+                    atasHTML += '<div class="card mb-2"><div class="card-body"><h6 class="card-title">Ata #' + ata.id.substring(0, 8) + '</h6><p class="card-text small">' + Utils.limitText(ata.conteudo || 'Sem conteúdo', 100) + '</p><span class="badge bg-' + (ata.aprovada ? 'success' : 'warning') + '">' + (ata.aprovada ? 'Aprovada' : 'Pendente') + '</span></div></div>';
+                });
+            } else {
+                atasHTML = '<p class="text-muted">Nenhuma ata criada</p>';
+            }
+            document.getElementById('atas-list').innerHTML = atasHTML;
+            
+            let decisoesHTML = '';
+            if (decisoes.length > 0) {
+                decisoes.forEach(decisao => {
+                    decisoesHTML += '<div class="card mb-2"><div class="card-body"><h6 class="card-title">' + decisao.titulo + '</h6><p class="card-text small">' + Utils.limitText(decisao.descricao || '', 100) + '</p><span class="badge bg-' + (decisao.status === 'concluida' ? 'success' : 'secondary') + '">' + (decisao.status || 'Pendente') + '</span></div></div>';
+                });
+            } else {
+                decisoesHTML = '<p class="text-muted">Nenhuma decisão registrada</p>';
+            }
+            document.getElementById('decisoes-list').innerHTML = decisoesHTML;
+        });
+    </script>
+</body>
+</html>
+

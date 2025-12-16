@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard - SEMEAR</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">SE</div>
+                    <div class="logo-text">
+                        <h1>SEMEAR</h1>
+                        <p>Sistema de Gestão Operacional</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="bi bi-bar-chart"></i>
+                        Dashboard
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="planejamento.html" class="nav-link">
+                        <i class="bi bi-calendar3"></i>
+                        Planejamento
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="obrigacoes.html" class="nav-link">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Obrigações
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="reunioes.html" class="nav-link">
+                        <i class="bi bi-people"></i>
+                        Reuniões
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="relatorios.html" class="nav-link">
+                        <i class="bi bi-file-text"></i>
+                        Relatórios
+                    </a>
+                </div>
+                <div class="nav-item" id="nav-permissions-item" style="display: none;">
+                    <a href="permissions.html" class="nav-link">
+                        <i class="bi bi-shield-lock"></i>
+                        Permissões
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <button class="sidebar-toggle d-md-none" type="button" onclick="toggleSidebar()" title="Abrir menu">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="header-title">
+                    <h1>Dashboard</h1>
+                    <p>Visão geral das atividades da associação</p>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="notification-btn" title="Notificações" onclick="showNotifications()">
+                        <i class="bi bi-bell"></i>
+                        <span class="notification-label" id="notification-count" style="display: none;">0</span>
+                    </button>
+                    <div class="dropdown">
+                        <button class="profile-btn dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Perfil">
+                            <i class="bi bi-person"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li><h6 class="dropdown-header" id="user-name">Usuário</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person me-2"></i>Meu Perfil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button type="button" class="dropdown-item text-danger" onclick="logout()">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Sair
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="row g-4 mb-5" id="metrics-row">
+                    <!-- Métricas serão carregadas aqui -->
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="metric-card">
+                            <h3 class="metric-label mb-3">Atividades Recentes</h3>
+                            <p class="metric-description mb-4">Últimas atividades realizadas</p>
+                            <div id="atividades-recentes">
+                                <!-- Atividades serão carregadas aqui -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="metric-card">
+                            <h3 class="metric-label mb-3">Próximas Obrigações</h3>
+                            <p class="metric-description mb-4">Alertas e convocações importantes</p>
+                            <div id="obrigacoes-proximas">
+                                <!-- Obrigações serão carregadas aqui -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- App Scripts -->
+    <script src="app.js"></script>
+    <script src="auth.js"></script>
+    <script src="utils.js"></script>
+    <script src="common.js"></script>
+    
+    <script>
+        // Carregar dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!initCommon()) return;
+            
+            // Carregar métricas e dados
+            const atividades = DatabaseManager.getAtividades();
+            const reunioes = DatabaseManager.getReunioes();
+            const obrigacoes = DatabaseManager.getObrigacoes();
+            const hoje = new Date();
+            
+            // Métricas
+            const totalAtividades = atividades.length;
+            const reunioesAgendadas = reunioes.filter(r => ['agendada', 'confirmada'].includes(r.status)).length;
+            const reunioesEstaSemana = reunioes.filter(r => {
+                if (!['agendada', 'confirmada'].includes(r.status)) return false;
+                const dataReuniao = new Date(r.data_hora);
+                const inicioSemana = new Date(hoje);
+                inicioSemana.setDate(inicioSemana.getDate() - inicioSemana.getDay());
+                const fimSemana = new Date(inicioSemana);
+                fimSemana.setDate(fimSemana.getDate() + 6);
+                return dataReuniao >= inicioSemana && dataReuniao <= fimSemana;
+            }).length;
+            
+            const tarefasPendentes = 0;
+            const tarefasPrazoProximo = 0;
+            
+            const atividadesConcluidas = atividades.filter(a => a.status === 'concluida').length;
+            const taxaConclusao = totalAtividades > 0 ? Math.round((atividadesConcluidas / totalAtividades) * 100) : 0;
+            
+            // Renderizar métricas
+            const metricsRow = document.getElementById('metrics-row');
+            metricsRow.innerHTML = `
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="icon blue">
+                            <i class="bi bi-file-text"></i>
+                        </div>
+                        <h3 class="metric-label">Atividades Planejadas</h3>
+                        <div class="metric-value">${totalAtividades}</div>
+                        <p class="metric-description">Total de atividades cadastradas</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="icon green">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h3 class="metric-label">Reuniões Agendadas</h3>
+                        <div class="metric-value">${reunioesAgendadas}</div>
+                        <p class="metric-description">${reunioesEstaSemana} esta semana</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="icon orange">
+                            <i class="bi bi-list-check"></i>
+                        </div>
+                        <h3 class="metric-label">Tarefas Pendentes</h3>
+                        <div class="metric-value">${tarefasPendentes}</div>
+                        <p class="metric-description">${tarefasPrazoProximo} com prazo próximo</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="icon purple">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h3 class="metric-label">Taxa de Conclusão</h3>
+                        <div class="metric-value">${taxaConclusao}%</div>
+                        <p class="metric-description">Atividades concluídas</p>
+                    </div>
+                </div>
+            `;
+            
+            // Atividades recentes
+            const atividadesRecentes = atividades
+                .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+                .slice(0, 5);
+            
+            let atividadesHTML = '';
+            if (atividadesRecentes.length > 0) {
+                atividadesRecentes.forEach(atividade => {
+                    const dotColor = atividade.status === 'concluida' ? 'green' : 
+                                   atividade.status === 'em_andamento' ? 'blue' : 'yellow';
+                    const statusLabel = atividade.status === 'concluida' ? 'Concluída' :
+                                       atividade.status === 'em_andamento' ? 'Em Andamento' :
+                                       atividade.status === 'planejada' ? 'Planejada' : 'Cancelada';
+                    const statusClass = atividade.status === 'concluida' ? 'status-completed' :
+                                       atividade.status === 'em_andamento' ? 'status-progress' : 'status-scheduled';
+                    let descricao = '';
+                    if (atividade.status === 'concluida') {
+                        descricao = 'Concluída em ' + Utils.formatDateTime(atividade.updated_at);
+                    } else if (atividade.status === 'em_andamento') {
+                        descricao = 'Em andamento - ' + (atividade.local || 'Sem local definido');
+                    } else {
+                        descricao = 'Agendada para ' + Utils.formatDate(atividade.data_inicio);
+                    }
+                    
+                    atividadesHTML += '<div class="activity-item">' +
+                        '<div class="activity-dot ' + dotColor + '"></div>' +
+                        '<div class="activity-content">' +
+                        '<h4 class="activity-title">' + atividade.titulo + '</h4>' +
+                        '<p class="activity-description">' + descricao + '</p>' +
+                        '</div>' +
+                        '<span class="activity-status ' + statusClass + '">' + statusLabel + '</span>' +
+                        '</div>';
+                });
+            } else {
+                atividadesHTML = '<p class="text-muted">Nenhuma atividade recente</p>';
+            }
+            document.getElementById('atividades-recentes').innerHTML = atividadesHTML;
+            
+            // Próximas obrigações
+            const obrigacoesProximas = obrigacoes
+                .filter(o => o.status !== 'concluida')
+                .sort((a, b) => new Date(a.data_vencimento) - new Date(b.data_vencimento))
+                .slice(0, 4);
+            
+            let obrigacoesHTML = '';
+            if (obrigacoesProximas.length > 0) {
+                obrigacoesProximas.forEach(obrigacao => {
+                    const diasRestantes = Utils.diffInDays(hoje, obrigacao.data_vencimento);
+                    let iconColor = 'blue';
+                    let urgencyClass = 'urgency-scheduled';
+                    let urgencyLabel = 'Programada';
+                    
+                    if (Utils.isVencida(obrigacao.data_vencimento) && obrigacao.status !== 'concluida') {
+                        iconColor = 'red';
+                        urgencyClass = 'urgency-urgent';
+                        urgencyLabel = 'Vencida';
+                    } else if (diasRestantes <= 3 && diasRestantes >= 0) {
+                        iconColor = 'red';
+                        urgencyClass = 'urgency-urgent';
+                        urgencyLabel = 'Urgente';
+                    } else if (diasRestantes <= 15) {
+                        iconColor = 'yellow';
+                        urgencyClass = 'urgency-attention';
+                        urgencyLabel = 'Atenção';
+                    }
+                    
+                    let descricao = '';
+                    if (diasRestantes < 0) {
+                        descricao = 'Vencida há ' + Math.abs(diasRestantes) + ' dias - ' + Utils.formatDate(obrigacao.data_vencimento);
+                    } else if (diasRestantes === 0) {
+                        descricao = 'Vence hoje - ' + Utils.formatDate(obrigacao.data_vencimento);
+                    } else {
+                        descricao = 'Vence em ' + diasRestantes + ' dias - ' + Utils.formatDate(obrigacao.data_vencimento);
+                    }
+                    
+                    obrigacoesHTML += '<div class="obligation-item">' +
+                        '<div class="obligation-icon ' + iconColor + '">' +
+                        '<i class="bi bi-bell"></i>' +
+                        '</div>' +
+                        '<div class="obligation-content">' +
+                        '<h4 class="obligation-title">' + obrigacao.titulo + '</h4>' +
+                        '<p class="obligation-description">' + descricao + '</p>' +
+                        '</div>' +
+                        '<span class="obligation-urgency ' + urgencyClass + '">' + urgencyLabel + '</span>' +
+                        '</div>';
+                });
+            } else {
+                obrigacoesHTML = '<p class="text-muted">Nenhuma obrigação próxima</p>';
+            }
+            document.getElementById('obrigacoes-proximas').innerHTML = obrigacoesHTML;
+            
+            // Atualizar contador de notificações
+            const notificacoes = getNotificacoes();
+            const countEl = document.getElementById('notification-count');
+            if (countEl) {
+                if (notificacoes.length > 0) {
+                    countEl.textContent = notificacoes.length > 99 ? '99+' : notificacoes.length;
+                    countEl.style.display = 'flex';
+                } else {
+                    countEl.style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
